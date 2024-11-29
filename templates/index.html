@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Analysis Service</title>
+</head>
+<body>
+    <h1>Welcome to the PDF Analysis Service!</h1>
+    
+    <!-- Form to upload PDF file -->
+    <form action="/analyze" method="POST" enctype="multipart/form-data">
+        <label for="file">Choose a PDF file:</label>
+        <input type="file" name="file" id="file" accept=".pdf" required>
+        <button type="submit">Upload and Analyze</button>
+    </form>
+
+    {% if error %}
+        <p style="color:red">{{ error }}</p>
+    {% endif %}
+
+   {% if analysis %}
+    <h2>Analysis Result:</h2>
+    <p><strong>Extracted Text:</strong></p>
+    <p>{{ extracted_text }}</p>  <!-- Show the extracted text (first 1000 chars) -->
+    
+    <p><strong>Analysis:</strong></p>
+    <ul>
+        <li><strong>Ambiguous:</strong> {{ analysis.is_ambiguous }}</li>
+        <li><strong>Inconsistent:</strong> {{ analysis.is_inconsistent }}</li>
+        <li><strong>Suggestions:</strong>
+            <ul>
+                {% for suggestion in analysis.suggestions %}
+                    <li>{{ suggestion }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+{% endif %}
+
+    
+</body>
+</html>
