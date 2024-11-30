@@ -3,41 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Analysis Service</title>
+    <title>PDF Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 0.5em;
+            border-radius: 5px;
+            margin-bottom: 1em;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the PDF Analysis Service!</h1>
-    
-    <!-- Form to upload PDF file -->
-    <form action="/analyze" method="POST" enctype="multipart/form-data">
-        <label for="file">Choose a PDF file:</label>
-        <input type="file" name="file" id="file" accept=".pdf" required>
-        <button type="submit">Upload and Analyze</button>
-    </form>
+    <div class="container">
+        <h1 class="text-center mb-4">PDF Analyzer</h1>
+        <div class="card p-4">
+            <form action="/analyze" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="file" class="form-label">Upload your PDF file</label>
+                    <input type="file" name="file" id="file" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Analyze</button>
+            </form>
+        </div>
 
-    {% if error %}
-        <p style="color:red">{{ error }}</p>
-    {% endif %}
+        {% if error %}
+        <div class="alert alert-danger mt-4" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
 
-   {% if analysis %}
-    <h2>Analysis Result:</h2>
-    <p><strong>Extracted Text:</strong></p>
-    <p>{{ extracted_text }}</p>  <!-- Show the extracted text (first 1000 chars) -->
-    
-    <p><strong>Analysis:</strong></p>
-    <ul>
-        <li><strong>Ambiguous:</strong> {{ analysis.is_ambiguous }}</li>
-        <li><strong>Inconsistent:</strong> {{ analysis.is_inconsistent }}</li>
-        <li><strong>Suggestions:</strong>
+        {% if analysis %}
+        <div class="card mt-4 p-4">
+            <h3>Analysis Results</h3>
+            
+            <p><strong>Sentiment Analysis:</strong> {{ analysis.sentiment[0]['label'] }} (Score: {{ analysis.sentiment[0]['score'] }})</p>
+            
+            <h4>Named Entities:</h4>
             <ul>
-                {% for suggestion in analysis.suggestions %}
-                    <li>{{ suggestion }}</li>
+                {% for entity in analysis.entities %}
+                <li>{{ entity['word'] }} (Label: {{ entity['entity_group'] }})</li>
                 {% endfor %}
             </ul>
-        </li>
-    </ul>
-{% endif %}
+            
+            <h4>Summary:</h4>
+            <p>{{ analysis.summary[0]['summary_text'] }}</p>
+            
+            <h4>Emotion Analysis:</h4>
+            <ul>
+                {% for emotion in analysis.emotions['labels'] %}
+                <li>{{ emotion }} (Confidence: {{ analysis.emotions['scores'][loop.index0] }})</li>
+                {% endfor %}
+            </ul>
+            
+            <h4>Readability Scores:</h4>
+            <ul>
+                <li>Flesch-Kincaid Grade Level: {{ analysis.readability_scores['Flesch-Kincaid'] }}</li>
+                <li>Gunning Fog Index: {{ analysis.readability_scores['Gunning-Fog'] }}</li>
+                <li>SMOG Index: {{ analysis.readability_scores['SMOG Index'] }}</li>
+                <li>Coleman-Liau Index: {{ analysis.readability_scores['Coleman-Liau'] }}</li>
+                <li>Automated Readability Index: {{ analysis.readability_scores['Automated Readability Index'] }}</li>
+            </ul>
+            
+            <h4>Grammar Issues:</h4>
+            <ul>
+                {% for issue in analysis.grammar_issues %}
+                <li>{{ issue.message }} (from {{ issue.context }})</li>
+                {% endfor %}
+            </ul>
 
-    
+            <h4>Suggestions:</h4>
+            {% if analysis.suggestions %}
+                <ul>
+                    {% for suggestion in analysis.suggestions %}
+                    <li class="highlight">{{ suggestion }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No suggestions to display.</p>
+            {% endif %}
+        </div>
+
+        <div class="card mt-4 p-4">
+            <h3>Extracted Text (Preview)</h3>
+            <pre>{{ analysis.extracted_text }}</pre>
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
