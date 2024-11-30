@@ -21,6 +21,7 @@ def extract_text_from_pdf(pdf_path):
             text += page.extract_text()  # Extract text from each page
     return text
 
+
 # Initialize the LanguageTool client
 tool = language_tool_python.LanguageTool('en-US')
 
